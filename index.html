@@ -1,113 +1,41 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <title>WebAR Torre</title>
-
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-
-  <!-- MindAR -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
-  <style>
-    body { margin: 0; overflow: hidden; }
-  </style>
-</head>
-
-<body>
-
-<a-scene
-  mindar-image="imageTargetSrc: targets.mind;"
-  embedded
-  color-space="sRGB"
-  renderer="colorManagement: true, physicallyCorrectLights"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: true"
->
-
-  <a-assets>
-    <a-asset-item id="modelo" src="torre.skfb.glb"></a-asset-item>
-  </a-assets>
-
-  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-  <a-entity mindar-image-target="targetIndex: 0">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
-    <a-entity 
-      id="model"
-      gltf-model="#modelo"
-      position="0 0 0"
-      rotation="0 0 0"
-      scale="0.5 0.5 0.5">
-    </a-entity>
+    <script src="https://raw.githack.com/fcor/aframe-gesture-detector/master/dist/gesture-detector.js"></script>
+    <script src="https://raw.githack.com/fcor/aframe-gesture-detector/master/dist/gesture-handler.js"></script>
+    
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind; filterMinCF:0.0001; filterBeta: 0.001;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false"
+      gesture-detector> <a-assets>
+        <a-asset-item id="modeloTorre" src="./torre.skfb.glb"></a-asset-item>
+      </a-assets>
 
-  </a-entity>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-</a-scene>
-
-<script>
-  const model = document.querySelector('#model');
-
-  let isDragging = false;
-  let previousX;
-  let previousDistance;
-  let currentScale = 0.5;
-
-  document.addEventListener('touchstart', (event) => {
-    if (event.touches.length === 1) {
-      isDragging = true;
-      previousX = event.touches[0].clientX;
-    }
-
-    if (event.touches.length === 2) {
-      previousDistance = getDistance(event.touches[0], event.touches[1]);
-    }
-  });
-
-  document.addEventListener('touchmove', (event) => {
-    event.preventDefault();
-
-    // ROTACIÓN CON UN DEDO
-    if (event.touches.length === 1 && isDragging) {
-      let deltaX = event.touches[0].clientX - previousX;
-      let rotation = model.getAttribute('rotation');
-      rotation.y += deltaX * 0.5;
-      model.setAttribute('rotation', rotation);
-      previousX = event.touches[0].clientX;
-    }
-
-    // ZOOM CON DOS DEDOS
-    if (event.touches.length === 2) {
-      let currentDistance = getDistance(event.touches[0], event.touches[1]);
-      let deltaDistance = currentDistance - previousDistance;
-
-      currentScale += deltaDistance * 0.001;
-
-      // Limitar zoom
-      currentScale = Math.max(0.2, Math.min(2, currentScale));
-
-      model.setAttribute('scale', {
-        x: currentScale,
-        y: currentScale,
-        z: currentScale
-      });
-
-      previousDistance = currentDistance;
-    }
-
-  }, { passive: false });
-
-  document.addEventListener('touchend', () => {
-    isDragging = false;
-  });
-
-  function getDistance(touch1, touch2) {
-    let dx = touch1.clientX - touch2.clientX;
-    let dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-</script>
-
-</body>
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-gltf-model 
+          src="#modeloTorre" 
+          position="0 0 0" 
+          scale="50 50 50" 
+          rotation="0 0 0"
+          class="clickable"
+          gesture-handler="rotationBin: x; minScale: 0.2; maxScale: 3">
+          </a-gltf-model>
+      </a-entity>
+      
+    </a-scene>
+  </body>
 </html>
